@@ -292,12 +292,6 @@ namespace PVR
     int StarRating(void) const;
 
     /*!
-     * @brief Notify on start if true.
-     * @return Notify on start.
-     */
-    bool Notify(void) const;
-
-    /*!
      * @brief The series number of this event.
      * @return The series number.
      */
@@ -435,7 +429,6 @@ namespace PVR
      */
     CDateTime GetCurrentPlayingTime(void) const;
 
-    bool                     m_bNotify = false;     /*!< notify on start */
     int                      m_iDatabaseID = -1;    /*!< database ID */
     int                      m_iGenreType = 0;      /*!< genre type */
     int                      m_iGenreSubType = 0;   /*!< genre subtype */
@@ -444,7 +437,7 @@ namespace PVR
     int                      m_iSeriesNumber = 0;   /*!< series number */
     int                      m_iEpisodeNumber = 0;  /*!< episode number */
     int                      m_iEpisodePart = 0;    /*!< episode part number */
-    unsigned int m_iUniqueBroadcastID = EPG_TAG_INVALID_UID;   /*!< unique broadcast ID */
+    unsigned int             m_iUniqueBroadcastID = EPG_TAG_INVALID_UID;   /*!< unique broadcast ID */
     std::string              m_strTitle;            /*!< title */
     std::string              m_strPlotOutline;      /*!< plot outline */
     std::string              m_strPlot;             /*!< plot */

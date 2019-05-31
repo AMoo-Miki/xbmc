@@ -1107,6 +1107,20 @@ bool CPVRGUIInfo::GetListItemAndPlayerBool(const CFileItem *item, const CGUIInfo
 {
   switch (info.m_info)
   {
+    case LISTITEM_HASARCHIVE:
+      if (item->IsPVRChannel())
+      {
+        bValue = item->GetPVRChannelInfoTag()->HasArchive();
+        return true;
+      }
+      break;
+    case LISTITEM_ISPLAYABLE:
+      if (item->IsEPG())
+      {
+        bValue = item->GetEPGInfoTag()->IsPlayable();
+        return true;
+      }
+      break;
     case LISTITEM_ISRECORDING:
       if (item->IsPVRChannel())
       {
@@ -1150,6 +1164,24 @@ bool CPVRGUIInfo::GetListItemAndPlayerBool(const CFileItem *item, const CGUIInfo
         const CPVRTimerInfoTagPtr timer = CPVRItem(item).GetTimerInfoTag();
         if (timer)
           bValue = timer->GetTimerRuleId() != PVR_TIMER_NO_PARENT;
+        return true;
+      }
+      break;
+    case LISTITEM_HASREMINDER:
+      if (item->IsPVRChannel() || item->IsEPG() || item->IsPVRTimer())
+      {
+        const std::shared_ptr<CPVRTimerInfoTag> timer = CPVRItem(item).GetTimerInfoTag();
+        if (timer)
+          bValue = timer->IsReminder();
+        return true;
+      }
+      break;
+    case LISTITEM_HASREMINDERRULE:
+      if (item->IsPVRChannel() || item->IsEPG() || item->IsPVRTimer())
+      {
+        const std::shared_ptr<CPVRTimerInfoTag> timer = CPVRItem(item).GetTimerInfoTag();
+        if (timer)
+          bValue = timer->IsReminder() && (timer->GetTimerRuleId() != PVR_TIMER_NO_PARENT);
         return true;
       }
       break;

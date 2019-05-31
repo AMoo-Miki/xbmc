@@ -151,6 +151,11 @@ namespace PVR
     void SetRadioRDSInfoTag(const std::shared_ptr<CPVRRadioRDSInfoTag>& tag);
 
     /*!
+     * @return True if this channel has archive support, false otherwise
+     */
+    bool HasArchive(void) const;
+
+    /*!
      * @return The path to the icon for this channel.
      */
     std::string IconPath(void) const;
@@ -159,11 +164,6 @@ namespace PVR
      * @return True if this user changed icon via GUI. False if not.
      */
     bool IsUserSetIcon(void) const;
-
-    /*!
-     * @return True if the channel icon path exists
-     */
-    bool IsIconExists(void) const;
 
     /*!
      * @return whether the user has changed the channel name through the GUI
@@ -440,6 +440,7 @@ namespace PVR
     bool             m_bChanged;                /*!< true if anything in this entry was changed that needs to be persisted */
     CPVRChannelNumber m_channelNumber;          /*!< the number this channel has in the currently selected channel group */
     std::shared_ptr<CPVRRadioRDSInfoTag> m_rdsTag; /*! < the radio rds data, if available for the channel. */
+    bool             m_bHasArchive;             /*!< true if this channel supports archive */
     //@}
 
     /*! @name EPG related channel data

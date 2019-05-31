@@ -126,6 +126,7 @@ set(HEADERS ActorProtocol.h
             Locale.h
             log.h
             MathUtils.h
+            MemUtils.h
             Mime.h
             Observer.h
             params_check_macros.h
@@ -169,8 +170,10 @@ if(XSLT_FOUND)
   list(APPEND HEADERS XSLTUtils.h)
 endif()
 if(EGL_FOUND)
-  list(APPEND SOURCES EGLUtils.cpp)
-  list(APPEND HEADERS EGLUtils.h)
+  list(APPEND SOURCES EGLUtils.cpp
+                      EGLFence.cpp)
+  list(APPEND HEADERS EGLUtils.h
+                      EGLFence.h)
 endif()
 
 # The large map trips the clang optimizer

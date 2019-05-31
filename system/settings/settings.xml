@@ -212,12 +212,6 @@
           <default>true</default>
           <control type="toggle" />
         </setting>
-        <setting id="videoplayer.useomxplayer" type="boolean" label="13458" help="13459">
-          <requirement>HAS_OMXPLAYER</requirement>
-          <level>2</level>
-          <default>true</default>
-          <control type="toggle" />
-        </setting>
         <setting id="videoplayer.usevtb" type="boolean" label="13429" help="36160">
           <requirement>HasVTB</requirement>
           <level>2</level>
@@ -641,6 +635,14 @@
           </dependencies>
           <control type="list" format="string" />
         </setting>
+        <setting id="subtitles.opacity" type="integer" parent="subtitles.font" label="752" help="36295">
+          <level>3</level>
+          <default>100</default>
+          <dependencies>
+            <dependency type="enable" on="property" name="IsUsingTTFSubtitles" setting="subtitles.font" />
+          </dependencies>
+          <control type="slider" format="percentage" range="0,100" />
+        </setting>
         <setting id="subtitles.bgcolor" type="integer" parent="subtitles.font" label="745" help="36228">
           <level>3</level>
           <default>0</default> <!-- Black -->
@@ -926,6 +928,7 @@
               <option label="208">1</option> <!-- SELECT_ACTION_PLAY_OR_RESUME -->
               <option label="13404">2</option> <!-- SELECT_ACTION_RESUME -->
               <option label="22081">3</option> <!-- SELECT_ACTION_INFO -->
+              <option label="13347">7</option> <!-- SELECT_ACTION_QUEUE -->
             </options>
           </constraints>
           <control type="list" format="string" />
@@ -1390,7 +1393,7 @@
           <default>false</default>
           <control type="toggle" />
         </setting>
-        <setting id="epg.ignoredbforclient" type="boolean" label="19072" help="36223">
+        <setting id="epg.storeepgindatabase" type="boolean" label="19072" help="36223">
           <level>2</level>
           <default>false</default>
           <control type="toggle" />

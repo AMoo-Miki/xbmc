@@ -21,6 +21,7 @@
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 
+#include "pvr/PVRGUIDirectory.h"
 #include "pvr/PVRManager.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
 
@@ -364,8 +365,9 @@ void CGUIDialogPVRGroupManager::Update()
 
   Clear();
 
-  /* get the groups list */
-  CServiceBroker::GetPVRManager().ChannelGroups()->Get(m_bIsRadio)->GetGroupList(m_channelGroups);
+  // get the groups list
+  CPVRGUIDirectory::GetChannelGroupsDirectory(m_bIsRadio, false, *m_channelGroups);
+
   m_viewChannelGroups.SetItems(*m_channelGroups);
   m_viewChannelGroups.SetSelectedItem(m_iSelectedChannelGroup);
 
@@ -403,21 +405,30 @@ void CGUIDialogPVRGroupManager::Update()
     // Slightly different handling for "all" group...
     if (m_selectedGroup->IsInternalGroup())
     {
-      m_selectedGroup->GetMembers(*m_groupMembers, CPVRChannelGroup::Include::ONLY_VISIBLE);
-      m_selectedGroup->GetMembers(*m_ungroupedChannels, CPVRChannelGroup::Include::ONLY_HIDDEN);
+      const std::vector<PVRChannelGroupMember> groupMembers = m_selectedGroup->GetMembers(CPVRChannelGroup::Include::ALL);
+      for (const auto& groupMember : groupMembers)
+      {
+        if (groupMember.channel->IsHidden())
+          m_ungroupedChannels->Add(std::make_shared<CFileItem>(groupMember.channel));
+        else
+          m_groupMembers->Add(std::make_shared<CFileItem>(groupMember.channel));
+      }
     }
     else
     {
-      m_selectedGroup->GetMembers(*m_groupMembers, CPVRChannelGroup::Include::ALL);
+      const std::vector<PVRChannelGroupMember> groupMembers = m_selectedGroup->GetMembers(CPVRChannelGroup::Include::ONLY_VISIBLE);
+      for (const auto& groupMember : groupMembers)
+      {
+        m_groupMembers->Add(std::make_shared<CFileItem>(groupMember.channel));
+      }
 
       /* for the center part, get all channels of the "all" channels group that are not in this group */
       const CPVRChannelGroupPtr allGroup = CServiceBroker::GetPVRManager().ChannelGroups()->GetGroupAll(m_bIsRadio);
-      CFileItemList allChannels;
-      allGroup->GetMembers(allChannels, CPVRChannelGroup::Include::ALL);
-      for (const auto& channelItem : allChannels)
+      const std::vector<PVRChannelGroupMember> allGroupMembers = allGroup->GetMembers(CPVRChannelGroup::Include::ONLY_VISIBLE);
+      for (const auto& groupMember : allGroupMembers)
       {
-        if (!m_selectedGroup->IsGroupMember(channelItem->GetPVRChannelInfoTag()))
-          m_ungroupedChannels->Add(channelItem);
+        if (!m_selectedGroup->IsGroupMember(groupMember.channel))
+          m_ungroupedChannels->Add(std::make_shared<CFileItem>(groupMember.channel));
       }
     }
     m_viewGroupMembers.SetItems(*m_groupMembers);

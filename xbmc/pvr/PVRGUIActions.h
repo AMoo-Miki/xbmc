@@ -114,9 +114,10 @@ namespace PVR
      * @brief Create a new timer rule, either interactive or non-interactive.
      * @param item containing epg data to create a timer rule for. item must be an epg tag or a channel.
      * @param bShowTimerSettings is used to control whether a settings dialog will be opened prior creating the timer rule.
+     * @param bFallbackToOneShotTimer if no timer rule can be created, try to create a one-shot timer instead.
      * @return true, if the timer rule was created successfully, false otherwise.
      */
-    bool AddTimerRule(const CFileItemPtr &item, bool bShowTimerSettings) const;
+    bool AddTimerRule(const std::shared_ptr<CFileItem>& item, bool bShowTimerSettings, bool bFallbackToOneShotTimer) const;
 
     /*!
      * @brief Creates or deletes a timer for the given epg tag.
@@ -145,6 +146,13 @@ namespace PVR
      * @return true on success, false otherwise.
      */
     bool EditTimerRule(const CFileItemPtr &item) const;
+
+    /*!
+     * @brief Get the timer rule for a given timer
+     * @param item containg an item to query the timer rule for. item must be a timer or an epg tag.
+     * @return The timer rule item, or nullptr if none was found.
+     */
+    std::shared_ptr<CFileItem> GetTimerRule(const std::shared_ptr<CFileItem>& item) const;
 
     /*!
      * @brief Rename a timer, showing a text input dialog.
@@ -351,6 +359,18 @@ namespace PVR
     bool CanSystemPowerdown(bool bAskUser = true) const;
 
     /*!
+     * @brief Create a new reminder timer, non-interactive.
+     * @param item containing epg data to create a reminder timer for. item must be an epg tag.
+     * @return true, if the timer was created successfully, false otherwise.
+     */
+    bool AddReminder(const std::shared_ptr<CFileItem>& item) const;
+
+    /*!
+     * @brief Announce due reminders, if any.
+     */
+    void AnnounceReminders() const;
+
+    /*!
      * @brief Get the currently selected item path; used across several windows/dialogs to share item selection.
      * @param bRadio True to query the selected path for PVR radio, false for Live TV.
      * @return the path.
@@ -418,9 +438,10 @@ namespace PVR
      * @param item containing epg data to create a timer or timer rule for. item must be an epg tag or a channel.
      * @param bCreateteRule denotes whether to create a one-shot timer or a timer rule.
      * @param bShowTimerSettings is used to control whether a settings dialog will be opened prior creating the timer or timer rule.
+     * @param bFallbackToOneShotTimer if bCreateteRule is true and no timer rule can be created, try to create a one-shot timer instead.
      * @return true, if the timer or timer rule was created successfully, false otherwise.
      */
-    bool AddTimer(const CFileItemPtr &item, bool bCreateRule, bool bShowTimerSettings) const;
+    bool AddTimer(const std::shared_ptr<CFileItem>& item, bool bCreateRule, bool bShowTimerSettings, bool bFallbackToOneShotTimer) const;
 
     /*!
      * @brief Delete a timer or timer rule, always showing a confirmation dialog.
@@ -502,6 +523,12 @@ namespace PVR
     bool EventOccursOnLocalBackend(const CFileItemPtr& item) const;
     bool IsNextEventWithinBackendIdleTime(void) const;
 
+    /*!
+     * @brief Announce and process a reminder timer.
+     * @param timer The reminder timer.
+     */
+    void AnnounceReminder(const std::shared_ptr<CPVRTimerInfoTag>& timer) const;
+
     mutable CCriticalSection m_critSection;
     CPVRChannelSwitchingInputHandler m_channelNumberInputHandler;
     bool m_bChannelScanRunning = false;
@@ -509,6 +536,7 @@ namespace PVR
     CPVRGUIChannelNavigator m_channelNavigator;
     std::string m_selectedItemPathTV;
     std::string m_selectedItemPathRadio;
+    mutable bool m_bReminderAnnouncementRunning = false;
   };
 
 } // namespace PVR

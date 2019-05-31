@@ -10,7 +10,6 @@
 
 #include "ServiceBroker.h"
 #include "addons/PVRClient.h"
-#include "filesystem/File.h"
 #include "guilib/LocalizeStrings.h"
 #include "threads/SingleLock.h"
 #include "utils/StringUtils.h"
@@ -46,6 +45,7 @@ CPVRChannel::CPVRChannel(bool bRadio /* = false */)
   m_bIsLocked               = false;
   m_iLastWatched            = 0;
   m_bChanged                = false;
+  m_bHasArchive             = false;
 
   m_iEpgId                  = -1;
   m_bEPGEnabled             = true;
@@ -78,6 +78,7 @@ CPVRChannel::CPVRChannel(const PVR_CHANNEL &channel, unsigned int iClientId)
   m_strEPGScraper           = "client";
   m_iEpgId                  = -1;
   m_bChanged                = false;
+  m_bHasArchive             = channel.bHasArchive;
 
   if (m_strChannelName.empty())
     m_strChannelName = StringUtils::Format("%s %d", g_localizeStrings.Get(19029).c_str(), m_iUniqueId);
@@ -113,6 +114,7 @@ void CPVRChannel::Serialize(CVariant& value) const
     epg->Serialize(value["broadcastnext"]);
 
   value["isrecording"] = false; // compat
+  value["hasarchive"] = m_bHasArchive;
 }
 
 /********** XBMC related channel methods **********/
@@ -139,6 +141,8 @@ bool CPVRChannel::Delete(void)
 
 CPVREpgPtr CPVRChannel::GetEPG(void) const
 {
+  const_cast<CPVRChannel*>(this)->CreateEPG();
+
   CSingleLock lock(m_critSection);
   if (!m_bIsHidden && m_bEPGEnabled)
     return m_epg;
@@ -176,12 +180,14 @@ bool CPVRChannel::UpdateFromClient(const CPVRChannelPtr &channel)
   if (m_clientChannelNumber     != channel->m_clientChannelNumber ||
       m_strInputFormat          != channel->InputFormat() ||
       m_iClientEncryptionSystem != channel->EncryptionSystem() ||
-      m_strClientChannelName    != channel->ClientChannelName())
+      m_strClientChannelName    != channel->ClientChannelName() ||
+      m_bHasArchive             != channel->HasArchive())
   {
     m_clientChannelNumber     = channel->m_clientChannelNumber;
     m_strInputFormat          = channel->InputFormat();
     m_iClientEncryptionSystem = channel->EncryptionSystem();
     m_strClientChannelName    = channel->ClientChannelName();
+    m_bHasArchive             = channel->HasArchive();
 
     UpdateEncryptionName();
     SetChanged();
@@ -297,6 +303,12 @@ void CPVRChannel::SetRadioRDSInfoTag(const std::shared_ptr<CPVRRadioRDSInfoTag>&
 {
   CSingleLock lock(m_critSection);
   m_rdsTag = tag;
+}
+
+bool CPVRChannel::HasArchive(void) const
+{
+  CSingleLock lock(m_critSection);
+  return m_bHasArchive;
 }
 
 bool CPVRChannel::SetIconPath(const std::string &strIconPath, bool bIsUserSetIcon /* = false */)
@@ -686,11 +698,6 @@ bool CPVRChannel::IsUserSetIcon(void) const
 {
   CSingleLock lock(m_critSection);
   return m_bIsUserSetIcon;
-}
-
-bool CPVRChannel::IsIconExists() const
-{
-  return XFILE::CFile::Exists(IconPath());
 }
 
 bool CPVRChannel::IsUserSetName() const
