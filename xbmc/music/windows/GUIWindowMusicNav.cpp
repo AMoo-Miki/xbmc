@@ -36,6 +36,7 @@
 #include "Application.h"
 #include "messaging/helpers/DialogOKHelper.h"
 #include "messaging/ApplicationMessenger.h"
+#include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "guilib/LocalizeStrings.h"
@@ -405,6 +406,12 @@ bool CGUIWindowMusicNav::GetDirectory(const std::string &strDirectory, CFileItem
 {
   if (strDirectory.empty())
     AddSearchFolder();
+
+  // check if caching of slow queries is disabled; the initial value is CACHE_IF_SLOW.
+  if (!CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_bMusicLibraryCacheSlowQueries)
+  {
+    items.SetCacheToDisc(CFileItemList::CACHE_NEVER);
+  }
 
   bool bResult = CGUIWindowMusicBase::GetDirectory(strDirectory, items);
   if (bResult)

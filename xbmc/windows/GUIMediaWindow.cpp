@@ -722,13 +722,21 @@ bool CGUIMediaWindow::GetDirectory(const std::string &strDirectory, CFileItemLis
   if (pathToUrl.IsProtocol("plugin") && !pathToUrl.GetHostName().empty())
     CServiceBroker::GetAddonMgr().UpdateLastUsed(pathToUrl.GetHostName());
 
-  // see if we can load a previously cached folder
-  CFileItemList cachedItems(strDirectory);
-  if (!strDirectory.empty() && cachedItems.Load(GetID()))
+  bool bLoadedFromCache = false;
+
+  if (!items.CacheToDiscNever())
   {
-    items.Assign(cachedItems);
+    // see if we can load a previously cached folder
+    CFileItemList cachedItems(strDirectory);
+
+    if (!strDirectory.empty() && cachedItems.Load(GetID()))
+    {
+      items.Assign(cachedItems);
+      bLoadedFromCache = true;
+    }
   }
-  else
+
+  if (!bLoadedFromCache)
   {
     unsigned int time = XbmcThreads::SystemClockMillis();
 
